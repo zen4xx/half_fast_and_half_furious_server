@@ -23,7 +23,7 @@ typedef struct
 {
     int index;
     char name[NAME_LEN];
-    char some_creation_data[CREATION_LEN];
+    char gltf[CREATION_LEN];
     char start; // when all players set start to 1 the game will be started
 } creation_payload;
 
