@@ -85,7 +85,7 @@ int main()
 
         if (p.index == -1) 
         {
-            printf("%s\n", p.name);
+            printf("%s joined\n", p.name);
             p.index = current_index;
             players_data[current_index] = p;    
             sendto(sockfd, &p.index, sizeof(p.index), MSG_CONFIRM, (const struct sockaddr *) &cliaddr, len);
@@ -100,7 +100,6 @@ int main()
         if (p.start == 1) 
         {
             sendto(sockfd, (void*)players_data, sizeof(creation_payload) * current_index, MSG_CONFIRM, (const struct sockaddr *) &cliaddr, len);
-            printf("%d\n", (int)sizeof(creation_payload) * current_index);
             
             ++started_players;
         }
@@ -117,10 +116,11 @@ int main()
         memset(players[i].mat, 0, 64);
     }
 
+    free(players_data);
+
     // main loop
     while (1)
     {
-        memset(buffer, 0, MAX_LINE);
         n = recvfrom(sockfd, (char *)buffer, MAX_LINE,  
                     MSG_WAITALL, ( struct sockaddr *) &cliaddr, 
                     &len); 
@@ -132,6 +132,8 @@ int main()
             MSG_CONFIRM, (const struct sockaddr *) &cliaddr, 
                 len); 
     }
+
+    free(players);
 
     return 0; 
 }
