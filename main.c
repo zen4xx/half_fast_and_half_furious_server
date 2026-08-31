@@ -114,6 +114,7 @@ int main()
     {
         players[i].index = players_data[i].index;
         memcpy(players[i].name, players_data[i].name, NAME_LEN);
+        memset(players[i].mat, 0, 64);
     }
 
     // main loop
@@ -125,7 +126,6 @@ int main()
                     &len); 
         payload p;
         memcpy(&p, buffer, sizeof(p));
-
         memcpy(players[p.index].mat, p.mat, sizeof(p.mat));
 
         sendto(sockfd, (void*)players, sizeof(payload) * current_index,  
