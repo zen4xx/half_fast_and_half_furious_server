@@ -6,6 +6,7 @@
 #include <arpa/inet.h> 
 #include <netinet/in.h> 
 #include <stdio.h>
+#include <time.h>
   
 #define PORT         8080 
 #define MAX_LINE     1024 
@@ -17,6 +18,7 @@ typedef struct
     int index;
     char name[NAME_LEN];
     char mat[64]; // glm::mat4
+    float hpos[3]; // glm::vec3
 } payload;
 
 typedef struct
@@ -25,6 +27,7 @@ typedef struct
     char name[NAME_LEN];
     char gltf[CREATION_LEN];
     char start; // when all players set start to 1 the game will be started
+    char game_mode;
 } creation_payload;
 
 creation_payload* resize(creation_payload* data, int count, int capacity)
@@ -33,6 +36,25 @@ creation_payload* resize(creation_payload* data, int count, int capacity)
     memcpy(new_data, data, count * sizeof(creation_payload));
     free(data);
     return new_data;
+}
+
+char check_and_regen_helmet(char *mat, float *hpos)
+{
+    float x, z;
+    memcpy(&x, mat + 48, sizeof(float));
+    memcpy(&z, mat + 56, sizeof(float));
+
+    if (hpos[0] > x - 1.f && hpos[0] < x + 1.f)
+    {
+        if (hpos[2] > z - 1.f && hpos[0] < z + 1.f)
+        {
+            hpos[0] = ((float)rand() / RAND_MAX * 100.f) - 50.f;
+            hpos[2] = ((float)rand() / RAND_MAX * 100.f) - 50.f;
+            return 1;            
+        }
+    }
+
+    return 0;
 }
 
 int main() 
@@ -73,6 +95,10 @@ int main()
     len = sizeof(cliaddr);
     creation_payload p;
 
+    char gamemode = 0;
+    float hpos[3] = {0.f, -1.f, 0.f};
+    srand((unsigned)time(NULL));
+
     // prepare stage
     while(1) 
     {
@@ -90,6 +116,7 @@ int main()
             players_data[current_index] = p;    
             sendto(sockfd, &p.index, sizeof(p.index), MSG_CONFIRM, (const struct sockaddr *) &cliaddr, len);
             ++current_index;
+            gamemode = p.game_mode;
         }
 
         if (current_index == players_capacity) {
@@ -107,6 +134,8 @@ int main()
         if (started_players == current_index) break;
 
     }
+
+    printf("selected gamemode: %d\n", (int)gamemode);
 
     players = malloc(sizeof(payload) * current_index);
     for (int i = 0; i < current_index; ++i) 
@@ -126,6 +155,9 @@ int main()
                     &len); 
         payload p;
         memcpy(&p, buffer, sizeof(p));
+        if (check_and_regen_helmet(p.mat, hpos))
+            printf("%s collects the helmet\n", p.name);
+        memcpy(players[p.index].hpos, hpos, 12); // 12 is sizeof(glm::vec3)
         memcpy(players[p.index].mat, p.mat, sizeof(p.mat));
 
         sendto(sockfd, (void*)players, sizeof(payload) * current_index,  
