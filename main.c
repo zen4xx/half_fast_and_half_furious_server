@@ -20,7 +20,6 @@ typedef struct
     char mat[64]; // glm::mat4
     float hpos[3]; // glm::vec3
 } payload;
-
 typedef struct
 {
     int index;
@@ -46,7 +45,7 @@ char check_and_regen_helmet(char *mat, float *hpos)
 
     if (hpos[0] > x - 1.f && hpos[0] < x + 1.f)
     {
-        if (hpos[2] > z - 1.f && hpos[0] < z + 1.f)
+        if (hpos[2] > z - 1.f && hpos[2] < z + 1.f)
         {
             hpos[0] = ((float)rand() / RAND_MAX * 100.f) - 50.f;
             hpos[2] = ((float)rand() / RAND_MAX * 100.f) - 50.f;
@@ -155,9 +154,12 @@ int main()
                     &len); 
         payload p;
         memcpy(&p, buffer, sizeof(p));
-        if (check_and_regen_helmet(p.mat, hpos))
-            printf("%s collects the helmet\n", p.name);
-        memcpy(players[p.index].hpos, hpos, 12); // 12 is sizeof(glm::vec3)
+        if (gamemode == 1)
+        {
+            if (check_and_regen_helmet(p.mat, hpos))
+                printf("%s collects the helmet\n", p.name);
+            memcpy(players[p.index].hpos, hpos, 12); // 12 is sizeof(glm::vec3)
+        }
         memcpy(players[p.index].mat, p.mat, sizeof(p.mat));
 
         sendto(sockfd, (void*)players, sizeof(payload) * current_index,  
