@@ -98,6 +98,9 @@ int main()
     float hpos[3] = {0.f, -1.f, 0.f};
     srand((unsigned)time(NULL));
 
+    hpos[0] = ((float)rand() / RAND_MAX * 100.f) - 50.f;
+    hpos[2] = ((float)rand() / RAND_MAX * 100.f) - 50.f;
+
     // prepare stage
     while(1) 
     {
